@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest
+.pytest_cache/
+
+# Environnements virtuels
+.venv/
+venv/
+env/
+
+# Fichiers générés par le scanner
+*.csv
+*.json
+*.txt
+
+# Fichiers temporaires
+*.tmp
+*.log
+
+# IDE
+.vscode/
+.idea/

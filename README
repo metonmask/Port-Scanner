@@ -1,0 +1,346 @@
+# Python Port Scanner
+
+Un scanner de ports TCP développé en Python permettant d'identifier les ports TCP accessibles sur un ou plusieurs hôtes.
+
+Le projet propose une interface en ligne de commande (CLI), un scan parallèle et plusieurs formats de sortie.
+
+## Fonctionnalités
+
+- Scan de ports TCP
+- Scan d'un ou plusieurs hôtes
+- Plage de ports personnalisable
+- Timeout configurable
+- Scan parallèle avec plusieurs workers
+- Sortie dans différents formats :
+  - TXT
+  - JSON
+  - CSV
+
+- Interface en ligne de commande (CLI)
+- Tests automatisés
+
+## Prérequis
+
+- Python 3.10 ou supérieur
+- Aucun logiciel externe nécessaire
+
+Les dépendances éventuelles sont listées dans `requirements.txt` ou `pyproject.toml`.
+
+## Installation
+
+Cloner le dépôt :
+
+```bash
+git clone https://github.com/USERNAME/python-port-scanner.git
+cd python-port-scanner
+```
+
+Créer un environnement virtuel :
+
+```bash
+python -m venv .venv
+```
+
+Activer l'environnement virtuel.
+
+### Linux / macOS
+
+```bash
+source .venv/bin/activate
+```
+
+### Windows
+
+```powershell
+.venv\Scripts\activate
+```
+
+Installer les dépendances :
+
+```bash
+pip install -r requirements.txt
+```
+
+Si le projet est installé comme un package Python :
+
+```bash
+pip install .
+```
+
+## Utilisation
+
+Le scanner s'utilise depuis la ligne de commande.
+
+Exemple général :
+
+```bash
+python -m port_scanner --host 127.0.0.1 --ports 1-1024
+```
+
+### Paramètres
+
+| Option      | Description                  | Exemple        |
+| ----------- | ---------------------------- | -------------- |
+| `--host`    | Hôte à scanner               | `127.0.0.1`    |
+| `--ports`   | Plage de ports               | `1-1024`       |
+| `--timeout` | Timeout d'une connexion      | `0.5`          |
+| `--workers` | Nombre de workers parallèles | `20`           |
+| `--output`  | Format de sortie             | `json`         |
+| `--file`    | Fichier de sortie            | `results.json` |
+
+Les noms exacts des options peuvent varier selon l'implémentation de la CLI.
+
+Pour afficher l'aide :
+
+```bash
+python -m port_scanner --help
+```
+
+## Exemples
+
+### Scanner les ports 1 à 1024 d'une machine locale
+
+```bash
+python -m port_scanner --host 127.0.0.1 --ports 1-1024
+```
+
+### Modifier le timeout
+
+```bash
+python -m port_scanner \
+    --host 127.0.0.1 \
+    --ports 1-1024 \
+    --timeout 1
+```
+
+### Utiliser plusieurs workers
+
+```bash
+python -m port_scanner \
+    --host 127.0.0.1 \
+    --ports 1-1000 \
+    --workers 50
+```
+
+### Exporter les résultats en JSON
+
+```bash
+python -m port_scanner \
+    --host 127.0.0.1 \
+    --ports 1-1024 \
+    --output json \
+    --file results.json
+```
+
+Exemple de résultat JSON :
+
+```json
+[
+  {
+    "host": "127.0.0.1",
+    "port": 22,
+    "state": "open"
+  },
+  {
+    "host": "127.0.0.1",
+    "port": 80,
+    "state": "open"
+  }
+]
+```
+
+### Exporter les résultats en CSV
+
+```bash
+python -m port_scanner \
+    --host 127.0.0.1 \
+    --ports 1-1024 \
+    --output csv \
+    --file results.csv
+```
+
+## Architecture
+
+Le fonctionnement général du projet est organisé autour de quatre étapes :
+
+```text
+CLI
+│
+├── hosts
+├── ports
+├── timeout
+└── workers
+│
+▼
+scan_hosts()
+│
+├── host 1
+│   └── scan_ports()
+│       └── workers
+│
+├── host 2
+│   └── scan_ports()
+│       └── workers
+│
+└── host 3
+    └── scan_ports()
+        └── workers
+│
+▼
+renderer
+│
+├── TXT
+├── CSV
+└── JSON
+```
+
+### CLI
+
+La CLI récupère les paramètres fournis par l'utilisateur :
+
+- hôtes à scanner ;
+- ports ou plage de ports ;
+- timeout ;
+- nombre de workers ;
+- format de sortie.
+
+### `scan_hosts()`
+
+Cette fonction orchestre le scan des différents hôtes.
+
+Elle transmet chaque hôte à la fonction responsable du scan des ports.
+
+### `scan_ports()`
+
+Cette fonction tente d'établir des connexions TCP vers les ports demandés et détermine leur état.
+
+### Workers
+
+Le scan peut être effectué en parallèle afin de réduire le temps nécessaire pour analyser une plage de ports importante.
+
+Le nombre de workers est configurable afin d'adapter les performances aux ressources disponibles.
+
+### Renderer
+
+Le renderer transforme les résultats du scan dans le format demandé :
+
+- TXT pour une lecture simple ;
+- JSON pour une utilisation programmatique ;
+- CSV pour une utilisation dans un tableur ou un autre outil.
+
+## Structure du projet
+
+```text
+python-port-scanner/
+│
+├── src/
+│   └── port_scanner/
+│       ├── __init__.py
+│       ├── cli.py
+│       ├── scanner.py
+│       └── renderer.py
+│
+├── tests/
+│   ├── test_scanner.py
+│   ├── test_cli.py
+│   └── test_renderer.py
+│
+├── README.md
+├── pyproject.toml
+└── requirements.txt
+```
+
+La structure exacte peut évoluer en fonction des besoins du projet.
+
+## Tests
+
+Les tests automatisés utilisent `pytest`.
+
+Installer les dépendances de développement :
+
+```bash
+pip install pytest
+```
+
+Lancer l'ensemble des tests :
+
+```bash
+pytest
+```
+
+Pour obtenir davantage de détails :
+
+```bash
+pytest -v
+```
+
+## Limitations
+
+Ce projet est un scanner TCP simple et ne constitue pas un outil complet d'audit réseau.
+
+Il présente notamment les limitations suivantes :
+
+- uniquement les connexions TCP sont analysées ;
+- les ports UDP ne sont pas pris en charge ;
+- les résultats peuvent dépendre du firewall ou des règles réseau de la machine distante ;
+- un timeout trop faible peut provoquer des résultats incomplets ;
+- un nombre trop important de workers peut augmenter la charge réseau et système ;
+- le scanner ne permet pas nécessairement d'identifier le logiciel ou la version associée à un port ouvert ;
+- les performances dépendent de la latence réseau, du système cible et de la configuration utilisée.
+
+## Sécurité et utilisation responsable
+
+Ce projet doit être utilisé uniquement sur des systèmes pour lesquels vous disposez d'une autorisation explicite d'effectuer un scan.
+
+Le scan de systèmes ou de réseaux appartenant à des tiers sans autorisation peut être interdit par leurs règles d'utilisation ou par la législation applicable.
+
+Pour effectuer des tests, privilégiez un environnement local ou une machine de laboratoire dont vous contrôlez l'accès.
+
+## Licence
+
+Ce projet est distribué sous licence MIT.
+
+Voir le fichier [`LICENSE`](LICENSE) pour le texte complet de la licence.
+
+## Auteur
+
+Projet développé par **[Votre nom]**.
+
+## Contribution
+
+Les contributions sont les bienvenues.
+
+Avant de proposer une modification :
+
+1. Créez une branche dédiée.
+2. Ajoutez ou mettez à jour les tests nécessaires.
+3. Vérifiez que l'ensemble des tests passe avec `pytest`.
+4. Décrivez clairement les modifications apportées.
+
+## Roadmap
+
+Fonctionnalités pouvant être ajoutées ultérieurement :
+
+- [ ] Support du scan UDP
+- [ ] Détection du service associé à un port
+- [ ] Détection de version des services
+- [ ] Support de plusieurs formats de configuration
+- [ ] Amélioration de l'affichage dans le terminal
+- [ ] Statistiques sur les scans
+- [ ] Meilleure gestion des erreurs réseau
+- [ ] Tests supplémentaires
+
+à continuer:
+
+Test avec pytest /
+ndd en adresse ip et inversement /
+scan udp
+barre de progression
+couleur quand rendu dans le terminal
+ajouter un .gitignore /
+ajouter une gestion propre des erreurs /
+scan de plusieurs hotes /
+export XML
+Verification de la qualité du code avec ruff ou flake8
+
+puis finir ReadMe et autre
